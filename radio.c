@@ -10,8 +10,8 @@
 // file descriptor for radio file
 static int radio_fd = -1;
 
-// frequency of radio
-static float freq = 88.5;
+// last set frequency of radio
+static float last_freq = 88.5;
 
 // fractional multiplier for frequency setting
 // frequency parameter = freq_frac * freq
@@ -21,6 +21,9 @@ static int freq_frac = 0;
 
 // minimum and maximum frequencies
 static float freq_min, freq_max;
+
+// the current state of the mute
+static int mute_state;
 
 // determine the appropriate frequency multiplier for the first tuner on the
 // open video device with the handle radio_fd
@@ -78,6 +81,8 @@ void radio_setfreq(float nfreq)
       perror("VIDIOC_S_FREQUENCY, set frequency");
       return;
    }
+
+   last_freq = nfreq;
 }
 
 // get the radio's current frequency
@@ -98,12 +103,14 @@ float radio_getfreq()
       return freq_min;
    }
 
-   return freq.frequency / freq_frac;
+   last_freq = (float)freq.frequency / freq_frac;
+
+   return last_freq;
 }
 
-// set the volume
-// volume must be 0-100, inclusive
-void radio_set_volume(int volume)
+// set the mute state
+// if mute is 0, then unmute; otherwise, mute
+void radio_set_mute(int mute)
 {
    struct v4l2_control control;
    struct v4l2_queryctrl qcontrol;
@@ -111,21 +118,24 @@ void radio_set_volume(int volume)
    if (radio_fd == -1)
       return;
 
-   // bound the volume
-   if (volume > 100)
-      volume = 100;
-   if (volume < 0)
-      volume = 0;
+   // set mute to either 0 or 1
+   if(mute > 0)
+      mute = 1;
+   else if(mute < 0)
+      mute = 0;
 
    // mute or unmute as needed
    memset(&control, 0, sizeof(control));
    control.id = V4L2_CID_AUDIO_MUTE;
-   control.value = (volume == 0 ? 1 : 0);
+   control.value = mute;
    if (ioctl(radio_fd, VIDIOC_S_CTRL, &control) < 0)
    {
       perror("VIDIOC_S_CTRL, set mute/unmute");
       return;
    }
+
+   // set the mute state
+   mute_state = mute;
 
    // get the minimum and maximum volume
    memset(&qcontrol, 0, sizeof(qcontrol));
@@ -136,11 +146,12 @@ void radio_set_volume(int volume)
       return;
    }
 
-   // set the volume, scaling based on the desired volume
+   // set the volume to the minimum or maximum value, depending on the mute
+   // state
    memset(&control, 0, sizeof(control));
    control.id = V4L2_CID_AUDIO_VOLUME;
    control.value = qcontrol.minimum +
-      volume * (qcontrol.maximum - qcontrol.minimum) / 100;
+         mute * (qcontrol.maximum - qcontrol.minimum);
    if (ioctl(radio_fd, VIDIOC_S_CTRL, &control) < 0)
    {
       perror("VIDIOC_S_CTRL, set volume");
@@ -151,77 +162,19 @@ void radio_set_volume(int volume)
 // unmute the radio
 void radio_unmute(void)
 {
-   radio_set_volume(100);
+   radio_set_mute(0);
 }
 
 // mute the radio
 void radio_mute(void)
 {
-   radio_set_volume(0);
+   radio_set_mute(1);
 }
 
-// get the current volume of the radio, where 0 <= volume <= 100
-int radio_get_volume()
-{
-   struct v4l2_control control;
-   struct v4l2_queryctrl qcontrol;
-   int volume;
-
-   if (radio_fd == -1)
-      return 0;
-
-   // see if muted; if so, the volume is 0
-   memset(&control, 0, sizeof(control));
-   control.id = V4L2_CID_AUDIO_MUTE;
-   if (ioctl(radio_fd, VIDIOC_S_CTRL, &control) < 0)
-   {
-      perror("VIDIOC_S_CTRL, see if muted");
-      return 0;
-   }
-   // radio is muted; volume is 0
-   if(control.value == 1)
-      return 0;
-
-   // not muted
-
-   // get the minimum and maximum volume
-   memset(&qcontrol, 0, sizeof(qcontrol));
-   qcontrol.id = V4L2_CID_AUDIO_VOLUME;
-   if (ioctl(radio_fd, VIDIOC_QUERYCTRL, &qcontrol) < 0)
-   {
-      perror("VIDIOC_QUERYCTRL, get min/max volume");
-      return 0;
-   }
-
-   // set the volume
-   memset(&control, 0, sizeof(control));
-   control.id = V4L2_CID_AUDIO_VOLUME;
-   if (ioctl(radio_fd, VIDIOC_G_CTRL, &control) < 0)
-   {
-      perror("VIDIOC_G_CTRL, get volume");
-      return 0;
-   }
-
-   // scale the volume based on the current value, min, and max
-   if (qcontrol.maximum == qcontrol.minimum)
-      volume = 0;
-   else
-      volume = 100 * (control.value - qcontrol.minimum) /
-         (qcontrol.maximum - qcontrol.minimum);
-
-   // bound the returned volume, in case something is wrong
-   if (volume > 100)
-      volume = 100;
-   else if (volume < 0)
-      volume = 0;
-
-   return volume;
-}
-
-// determines if the radio is currently muted
+// returns 0 if the radio is not muted, 1 if the radio is muted
 int radio_ismute()
 {
-   return radio_get_volume() <= 0;
+   return mute_state;
 }
 
 // opens the radio device
@@ -238,9 +191,8 @@ int open_radio()
    // get the tuner information
    radio_get_tunerinfo();
 
-   // if muted, unmute
-   if (radio_ismute())
-      radio_unmute();
+   // unmute the radio
+   radio_unmute();
 
    return 0;
 }
@@ -263,5 +215,5 @@ void close_radio()
 // change the radio frequency by a delta amount
 void radio_freq_delta(float delta)
 {
-   radio_setfreq(freq + delta);
+   radio_setfreq(last_freq + delta);
 }

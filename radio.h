@@ -6,7 +6,7 @@ void close_radio();
 void radio_setfreq(float nfreq);
 float radio_getfreq();
 void radio_freq_delta(float delta);
-void radio_set_volume(int volume);
+void radio_set_mute(int mute);
 void radio_mute();
 void radio_unmute();
 int radio_ismute();
