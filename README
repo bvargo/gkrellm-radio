@@ -73,10 +73,3 @@ USAGE
 CREDITS
    Lars Christensen: upstream author untill version 0.2.1
    Sjoerd Simons: Version 0.3 and higher
-
-
-THANKS TO
-
-    Gerd Knorr - I borrowed some of the radio interface code from
-    his Xawtv radio application.
-       

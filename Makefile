@@ -7,7 +7,7 @@ VERSIONREV=4
 
 VERSION=$(VERSIONMAJOR).$(VERSIONMINOR).$(VERSIONREV)
 
-DISTFILES=gkrellm_radio.c radio.c radio.h videodev.h README Makefile CHANGES
+DISTFILES=gkrellm_radio.c radio.c radio.h README Makefile CHANGES
 
 CC=gcc
 LDFLAGS=

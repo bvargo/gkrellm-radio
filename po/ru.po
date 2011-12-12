@@ -68,13 +68,9 @@ msgstr ""
 msgid ""
 "\n"
 "\tLars Christensen - Upstream author untill version 0.2.1\n"
-"\tGerd Knorr - borrowed some of the radio interface code from his Xawtv "
-"radio application.\n"
 msgstr ""
 "\n"
 "\tLars Christensen - Основной разработчик до версии 0.2.1\n"
-"\tGerd Knorr - автор Xawtv, код которого был частично позаимствован\n"
-"\tдля доступа к интерфейсу радио.\n"
 
 #: gkrellm_radio.c:38
 msgid ""

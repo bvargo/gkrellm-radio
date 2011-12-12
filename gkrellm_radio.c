@@ -32,9 +32,7 @@ static gchar *info_text[] = {
   N_("\t* Using your mousewheel will tune up or down.\n"),
   N_("\t*Right mouse button will pop up a channel menu\n"),
   N_("<b>\nThanks to:\n"),
-  N_("\n\tLars Christensen - Upstream author untill version 0.2.1\n" \
-  "\tGerd Knorr - borrowed some of the radio interface code from his Xawtv" \
-  " radio application.\n"),
+  N_("\n\tLars Christensen - Upstream author untill version 0.2.1\n"),
   N_("<b>\nHomepage:\n"),
   "\n\thttp://gkrellm.luon.net/gkrellm-radio.phtml\n"
 };
@@ -116,7 +114,7 @@ do_switch_station(int nr) {
   nr %= nstations;
   currentstation = nr;
   start_mute_timer();
-  radio_tune(stations[nr].freq);
+  radio_setfreq(stations[nr].freq);
   gkrellm_locale_dup_string(&text_utf8, stations[nr].station_name, &text_locale);
   gkrellm_draw_decal_text(panel, station_text, 
       text_locale, -1);
@@ -185,8 +183,8 @@ void reopen_radio() {
 
   if (open_radio() != -1) {
       start_mute_timer();
-      radio_tune(current_freq());
-      set_text_freq(current_freq());
+      radio_setfreq(radio_getfreq());
+      set_text_freq(radio_getfreq());
       onoff_state = 1;		/* on */
   }
   set_onoff_button(onoff_state);
@@ -201,8 +199,8 @@ void gkrellm_radio_turn_onoff(void) {
 	    /* radio was opened */
         onoff_state = 1; /* on */
       	start_mute_timer();
-      	radio_tune(current_freq());
-        set_text_freq(current_freq());
+      	radio_setfreq(radio_getfreq());
+        set_text_freq(radio_getfreq());
        	set_onoff_button(onoff_state);
       }
     } else {
@@ -237,7 +235,7 @@ panel_expose_event(GtkWidget *widget, GdkEventExpose *ev) {
 
 void gkrellm_radio_finetune_delta (float amount) {
   radio_freq_delta(amount);
-  set_text_freq(current_freq());
+  set_text_freq(radio_getfreq());
   gkrellm_config_modified();
 }
 
@@ -316,7 +314,7 @@ create_plugin(GtkWidget *vbox, gint first_create) {
      |  decal.  Just pass the frame we want to be the out image and the
      |  frame for the in or pressed image.
   */
-  gkrellm_locale_dup_string(&text_utf8, station_name(current_freq()), &text_locale);
+  gkrellm_locale_dup_string(&text_utf8, station_name(radio_getfreq()), &text_locale);
   gkrellm_draw_decal_text(panel, station_text, text_locale,
 			  button_state);
 
@@ -414,7 +412,7 @@ void create_station_editor(gint new_entry) {
   label = gtk_label_new(_("Frequency:"));
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_EXPAND, GTK_FILL, 4, 4);
   
-  adj = gtk_adjustment_new(current_freq(), 0.05, 999.99, 0.05, 1, 1);
+  adj = gtk_adjustment_new(radio_getfreq(), 0.05, 999.99, 0.05, 1, 1);
   gui_freq_input = gtk_spin_button_new(GTK_ADJUSTMENT(adj), 0.05, 2);
   gtk_table_attach(GTK_TABLE(table), gui_freq_input, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 4, 4);
 
@@ -652,7 +650,7 @@ static void apply_config(void) {
 
   mutetime = gtk_spin_button_get_value_as_float(GTK_SPIN_BUTTON(gui_mutetime_entry));
 
-  set_text_freq(current_freq()); /* reset the frequency display */
+  set_text_freq(radio_getfreq()); /* reset the frequency display */
 
   attempt_reopen =
     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gui_reopen_toggle));
@@ -665,7 +663,7 @@ static void apply_config(void) {
 
 void save_config(FILE *f) {
   int i;
-  fprintf(f, "%s freq %.2f\n", CONFIG_KEY, current_freq());
+  fprintf(f, "%s freq %.2f\n", CONFIG_KEY, radio_getfreq());
   fprintf(f, "%s nstations %d\n", CONFIG_KEY, nstations);
   for (i = 0; i<nstations; i++) {
     fprintf(f, "%s stationname%d %s\n", CONFIG_KEY, i, stations[i].station_name);
@@ -688,7 +686,7 @@ void load_config(gchar *s) {
 
   if (strcmp(key, "freq") == 0) {
     start_mute_timer();
-    radio_tune(atof(value));
+    radio_setfreq(atof(value));
   } else if (strcmp(key, "nstations") == 0) {
     free_stations();
     nstations = atoi(value);
