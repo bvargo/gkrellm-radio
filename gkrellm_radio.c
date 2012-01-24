@@ -34,7 +34,7 @@ static gchar *info_text[] = {
   N_("<b>\nThanks to:\n"),
   N_("\n\tLars Christensen - Upstream author untill version 0.2.1\n"),
   N_("<b>\nHomepage:\n"),
-  "\n\thttp://gkrellm.luon.net/gkrellm-radio.phtml\n"
+  "\n\thttp://gkrellm.luon.net/gkrellm-radio.php\n"
 };
 
 static GkrellmPanel    *panel;
