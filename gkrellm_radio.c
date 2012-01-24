@@ -185,6 +185,7 @@ void reopen_radio() {
 
   if (open_radio() != -1) {
       start_mute_timer();
+      radio_tune(current_freq());
       set_text_freq(current_freq());
       onoff_state = 1;		/* on */
   }
@@ -341,9 +342,9 @@ create_plugin(GtkWidget *vbox, gint first_create) {
 		       GTK_SIGNAL_FUNC(button_release_event), NULL);
     g_signal_connect(GTK_OBJECT (panel->drawing_area), "scroll_event",
 		       GTK_SIGNAL_FUNC(scroll_event), NULL);
+    reopen_radio();
   }
   
-  reopen_radio();
   gkrellm_draw_panel_layers(panel);
 }
 
