@@ -39,12 +39,12 @@ static gchar *info_text[] = {
   "\n\thttp://gkrellm.luon.net/gkrellm-radio.phtml\n"
 };
 
-static Panel    *panel;
-static Monitor  *plugin_monitor;
+static GkrellmPanel    *panel;
+static GkrellmMonitor  *plugin_monitor;
 
-static Decal *station_text, *decal_onoff_pix;
+static GkrellmDecal *station_text, *decal_onoff_pix;
 
-DecalButton *onoff_button;
+GkrellmDecalbutton *onoff_button;
 
 static gint     style_id;
 
@@ -118,7 +118,7 @@ do_switch_station(int nr) {
   radio_tune(stations[nr].freq);
   gkrellm_draw_decal_text(panel, station_text, 
       stations[nr].station_name, -1);
-  gkrellm_draw_layers_force(panel);
+  gkrellm_draw_panel_layers(panel);
 }
 
 static void exit_func(void) {
@@ -171,6 +171,7 @@ void set_onoff_button(int on) {
   else
     imgid = D_MISC_BUTTON_OUT;
   gkrellm_set_decal_button_index(onoff_button, imgid);
+  gkrellm_draw_panel_layers(panel);
 }
 
 void reopen_radio() {
@@ -208,7 +209,7 @@ void gkrellm_radio_turn_onoff(void) {
 }
 
 void
-cb_button(DecalButton *button)
+cb_button(GkrellmDecalbutton *button)
 {
   if (GPOINTER_TO_INT(button->data) == 1) { switch_station(); }
   if (GPOINTER_TO_INT(button->data) == 2) { gkrellm_radio_turn_onoff(); }
@@ -216,12 +217,11 @@ cb_button(DecalButton *button)
 
 static void set_text_freq(float freq) {
   gkrellm_draw_decal_text(panel, station_text, station_name(freq), -1);
-  gkrellm_draw_layers_force(panel);
+  gkrellm_draw_panel_layers(panel);
 }
 
 static gint
-panel_expose_event(GtkWidget *widget, GdkEventExpose *ev)
-{
+panel_expose_event(GtkWidget *widget, GdkEventExpose *ev) {
   gdk_draw_pixmap(widget->window,
 		  widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
 		  panel->pixmap, ev->area.x, ev->area.y, ev->area.x, ev->area.y,
@@ -238,31 +238,24 @@ void gkrellm_radio_finetune_delta (float amount) {
 static gint 
 button_release_event(GtkWidget *widget, GdkEventButton *ev, void *N) {
 
-  switch (ev->button) {
-    case 3:
+  if  (ev->button == 3) {
       gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
           ev->state, ev->time);
-      break;
-    case 4:
-      gkrellm_radio_finetune_delta(+0.05);
-      break;
-    case 5:
-      gkrellm_radio_finetune_delta(-0.05);
-      break; 
   }
   return TRUE;
 }
 
-static void
-update_plugin()
-{
-  gkrellm_draw_layers(panel);
+static gint scroll_event(GtkWidget *widget,GdkEventScroll *ev,gpointer data) {
+  float delta = ev->direction == GDK_SCROLL_UP ? 0.05 : -0.05;
+  gkrellm_radio_finetune_delta(delta);
+  return TRUE;
 }
 
 static void
 create_plugin(GtkWidget *vbox, gint first_create) {
-  Style           *style;
-  TextStyle       *ts, *ts_alt;
+  GkrellmStyle     *style;
+  GkrellmTextstyle *ts, *ts_alt;
+  GkrellmMargin    *margin;
   GdkPixmap       *pixmap;
   GdkBitmap       *mask;
   gint            y;
@@ -278,7 +271,7 @@ create_plugin(GtkWidget *vbox, gint first_create) {
 
   style = gkrellm_meter_style(style_id);
 
-  /* Each Style has two text styles.  The theme designer has picked the
+  /* Each GkrellmStyle has two text styles.  The theme designer has picked the
      |  colors and font sizes, presumably based on knowledge of what you draw
      |  on your panel.  You just do the drawing.  You probably could assume
      |  the ts font is larger than the ts_alt font, but again you can be
@@ -304,10 +297,8 @@ create_plugin(GtkWidget *vbox, gint first_create) {
   /* Configure the panel to hold the above created decals, add in a little
      |  bottom margin for looks, and create the panel.
   */
-  gkrellm_configure_panel(panel, NULL, style);
-  panel->label->h_panel += 2;     /* Some bottom margin */
-  gkrellm_create_panel(vbox, panel, gkrellm_bg_meter_image(style_id));
-  gkrellm_monitor_height_adjust(panel->h);
+  gkrellm_panel_configure(panel, NULL, style);
+  gkrellm_panel_create(vbox, plugin_monitor,panel);
 
   /* After the panel is created, the decals can be converted into buttons.
      |  First draw the initial text into the text decal button and then
@@ -319,8 +310,9 @@ create_plugin(GtkWidget *vbox, gint first_create) {
   gkrellm_draw_decal_text(panel, station_text, station_name(current_freq()),
 			  button_state);
 
+  margin = gkrellm_get_style_margins(style);
   gkrellm_put_decal_in_meter_button(panel, station_text, cb_button,
-				    GINT_TO_POINTER(1));
+				    GINT_TO_POINTER(1),margin);
   onoff_button = 
     gkrellm_make_decal_button(panel, decal_onoff_pix, cb_button,
 			      GINT_TO_POINTER(2),
@@ -334,13 +326,16 @@ create_plugin(GtkWidget *vbox, gint first_create) {
   */
 
   if (first_create) {
-    gtk_signal_connect(GTK_OBJECT (panel->drawing_area), "expose_event",
+    g_signal_connect(GTK_OBJECT (panel->drawing_area), "expose_event",
 		       (GtkSignalFunc) panel_expose_event, NULL);
-    gtk_signal_connect(GTK_OBJECT (panel->drawing_area), "button_release_event",
+    g_signal_connect(GTK_OBJECT (panel->drawing_area), "button_release_event",
 		       GTK_SIGNAL_FUNC(button_release_event), NULL);
+    g_signal_connect(GTK_OBJECT (panel->drawing_area), "scroll_event",
+		       GTK_SIGNAL_FUNC(scroll_event), NULL);
   }
   
   reopen_radio();
+  gkrellm_draw_panel_layers(panel);
 }
 
 static GtkWidget *gui_station_list = NULL;
@@ -365,7 +360,7 @@ void close_and_add_station_editor(gpointer *userdata) {
   gfloat freq;
   gchar fstr[32];
 
-  f[0] = gtk_entry_get_text(GTK_ENTRY(gui_station_name_input));
+  f[0] = (gchar *) gtk_entry_get_text(GTK_ENTRY(gui_station_name_input));
   freq = gtk_spin_button_get_value_as_float(GTK_SPIN_BUTTON(gui_freq_input));
   sprintf(fstr, "%.2f", freq);
   f[1] = fstr;
@@ -422,7 +417,7 @@ void create_station_editor(gint new_entry) {
 			    (gpointer)new_entry);
   gtk_container_add(action_area, button);
 
-  /* Cancel Button */
+  /* Cancel button */
   button = gtk_button_new_with_label("Cancel");
   gtk_signal_connect_object (GTK_OBJECT(button), "clicked",
 			     GTK_SIGNAL_FUNC(close_station_editor), NULL);
@@ -607,20 +602,12 @@ static void create_config(GtkWidget *tab) {
   /* INFO TAB */
   
   frame = gtk_frame_new(NULL);
-  gtk_container_border_width(GTK_CONTAINER(frame), 3);
-  scrolled = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
-				 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_container_add(GTK_CONTAINER(frame), scrolled);
-  label = gtk_label_new("Info");
-  gtk_notebook_append_page(GTK_NOTEBOOK(tabs), frame, label);
-  
-  text = gtk_text_new(NULL, NULL);
-  gtk_text_set_editable(GTK_TEXT(text), FALSE);
+  scrolled = gkrellm_gtk_notebook_page(tabs,"Info");
+  text = gkrellm_gtk_scrolled_text_view(vbox,NULL,
+                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-  gkrellm_add_info_text(text,info_text,sizeof(info_text)/sizeof(gchar *));
-  gtk_container_add(GTK_CONTAINER(scrolled), text);
-
+  gkrellm_gtk_text_view_append_strings(text,info_text,
+      sizeof(info_text)/sizeof(gchar *));
   /* ABOUT TAB */
 
   plugin_about_text = g_strdup_printf(
@@ -728,12 +715,12 @@ void load_config(gchar *s) {
 
 /* The monitor structure tells GKrellM how to call the plugin routines.
 */
-static Monitor  plugin_mon  =
+static GkrellmMonitor  plugin_mon  =
 {
   CONFIG_NAME,			/* Name, for config tab.    */
   0,				/* Id,  0 if a plugin       */
   create_plugin,		/* The create function      */
-  update_plugin,		/* The update function      */
+  NULL,		/* The update function      */
   create_config,		/* The config tab create function   */
   apply_config,			/* Apply the config function        */
 
@@ -755,9 +742,8 @@ static Monitor  plugin_mon  =
 /* All GKrellM plugins must have one global routine named init_plugin()
 |  which returns a pointer to a filled in monitor structure.
 */
-Monitor *
-init_plugin()
-{
+GkrellmMonitor *
+gkrellm_init_plugin() {
   style_id = gkrellm_add_meter_style(&plugin_mon, STYLE_NAME);
   plugin_monitor = &plugin_mon;
 #ifdef HAVE_LIRC

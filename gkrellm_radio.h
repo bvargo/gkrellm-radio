@@ -2,7 +2,7 @@
 #ifndef GKRELLM_RADIO_H
 #define GKRELLM_RADIO_H
 
-#include <gkrellm/gkrellm.h>
+#include <gkrellm2/gkrellm.h>
 
 extern gint nstations;
 extern gint currentstation;

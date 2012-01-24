@@ -1,7 +1,7 @@
 
 GKrellM Radio Plugin - to tune your radio card on Linux.
 Copyright (C) 2000 Lars Christensen
-Copyright (C) 2001-2001 Sjoerd Simons
+Copyright (C) 2001-2002 Sjoerd Simons
 
 This plugin allows your to turn your radio card on/off and tune to
 channels.
@@ -44,8 +44,8 @@ INSTALLATION
     2. Installing
 
     Copy the file radio.so to your GKrellM plugin directory. This
-    could be /usr/share/gkrellm/plugins. If you don't have write
-    access, you can put the file in ~/.gkrellm/plugins/ instead.
+    could be /usr/lib/gkrellm2/plugins. If you don't have write
+    access, you can put the file in ~/.gkrellm2/plugins/ instead.
 
 
 USAGE
@@ -71,9 +71,6 @@ CREDITS
 
 
 THANKS TO
-
-    Sjoed Simons - I borrowed some of the code from his `volume'
-    plugin.
 
     Gerd Knorr - I borrowed some of the radio interface code from
     his Xawtv radio application.
