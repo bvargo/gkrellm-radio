@@ -1,3 +1,8 @@
+Version 2.0.1:
+  * Put info text in the right widget
+  * Popup a message if ones request the channels menu without having setup some
+    channels
+
 Version 2.0:
   * port to gkrellm2 and gtk2
 

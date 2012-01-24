@@ -139,6 +139,10 @@ create_freq_menu(void) {
   if (menu != NULL) {
     gtk_widget_destroy(menu);
   }
+  if (!nstations) { 
+    menu = NULL;
+    return;
+  }
     
   menu = gtk_menu_new();
 
@@ -193,8 +197,8 @@ void gkrellm_radio_turn_onoff(void) {
     onoff_state = !onoff_state;
     if (onoff_state) {
       if (open_radio() == -1) {
-        	gkrellm_message_window("GKrellM error",
-			      "GKrellM radio plugin couldn't open /dev/radio", NULL);
+        	gkrellm_message_window("GKrellM radio plugin",
+			      "Couldn't open /dev/radio", NULL);
       } else {
 	    /* radio was opened */
       	start_mute_timer();
@@ -239,8 +243,10 @@ static gint
 button_release_event(GtkWidget *widget, GdkEventButton *ev, void *N) {
 
   if  (ev->button == 3) {
-      gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
-          ev->state, ev->time);
+    if (menu == NULL) gkrellm_message_window("GKrellM radio plugin",
+        "Please setup some channels in the configuration",NULL);
+    else gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
+        ev->state, ev->time);
   }
   return TRUE;
 }
@@ -603,8 +609,8 @@ static void create_config(GtkWidget *tab) {
   
   frame = gtk_frame_new(NULL);
   scrolled = gkrellm_gtk_notebook_page(tabs,"Info");
-  text = gkrellm_gtk_scrolled_text_view(vbox,NULL,
-                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  text = gkrellm_gtk_scrolled_text_view(scrolled,NULL,
+                                   GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   gkrellm_gtk_text_view_append_strings(text,info_text,
       sizeof(info_text)/sizeof(gchar *));
