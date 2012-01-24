@@ -22,20 +22,20 @@
  * */
 
 static gchar *info_text[] = {
-  "<b>GKrellM Radio Plugin\n\n",
-  "This plugin allow you to control the radio card of your Linux box,\
-   if you have one installed.\n",
-  "<b>\nUser Interface:\n",
-  "\n\t* Clicking the right button will turn the radio on and off.\n",
-  "\t* Clicking the left text will tune to the next channel configured",
-  " under configuration.\n"
-  "\t* Using your mousewheel will tune up or down.\n",
-  "\t*Right mouse button will pop up a channel menu\n",
-  "<b>\nThanks to:\n",
-  "\n\tLars Christensen - Upstream author untill version 0.2.1\n",
-  "\tGerd Knorr - borrowed some of the radio interface code from his Xawtv",
-  " radio application.\n",
-  "<b>\nHomepage:\n",
+  N_("<b>GKrellM Radio Plugin\n\n"),
+  N_("This plugin allow you to control the radio card of your Linux box," \
+   "if you have one installed.\n"),
+  N_("<b>\nUser Interface:\n"),
+  N_("\n\t* Clicking the right button will turn the radio on and off.\n"),
+  N_("\t* Clicking the left text will tune to the next channel configured" \
+  " under configuration.\n"),
+  N_("\t* Using your mousewheel will tune up or down.\n"),
+  N_("\t*Right mouse button will pop up a channel menu\n"),
+  N_("<b>\nThanks to:\n"),
+  N_("\n\tLars Christensen - Upstream author untill version 0.2.1\n" \
+  "\tGerd Knorr - borrowed some of the radio interface code from his Xawtv" \
+  " radio application.\n"),
+  N_("<b>\nHomepage:\n"),
   "\n\thttp://gkrellm.luon.net/gkrellm-radio.phtml\n"
 };
 
@@ -112,12 +112,14 @@ void start_mute_timer() {
 
 void 
 do_switch_station(int nr) {
+  gchar *text_utf8 = NULL, *text_locale = NULL;
   nr %= nstations;
   currentstation = nr;
   start_mute_timer();
   radio_tune(stations[nr].freq);
+  gkrellm_locale_dup_string(&text_utf8, stations[nr].station_name, &text_locale);
   gkrellm_draw_decal_text(panel, station_text, 
-      stations[nr].station_name, -1);
+      text_locale, -1);
   gkrellm_draw_panel_layers(panel);
 }
 
@@ -193,7 +195,7 @@ void gkrellm_radio_turn_onoff(void) {
     if (!onoff_state) {  
       if (open_radio() == -1) {
         	gkrellm_message_window("GKrellM radio plugin",
-			      "Couldn't open /dev/radio", NULL);
+			      _("Couldn't open /dev/radio"), NULL);
       } else {
 	    /* radio was opened */
         onoff_state = 1; /* on */
@@ -217,7 +219,9 @@ cb_button(GkrellmDecalbutton *button)
 }
 
 static void set_text_freq(float freq) {
-  gkrellm_draw_decal_text(panel, station_text, station_name(freq), -1);
+  gchar *text_utf8 = NULL, *text_locale = NULL;
+  gkrellm_locale_dup_string(&text_utf8, station_name(freq), &text_locale);
+  gkrellm_draw_decal_text(panel, station_text, text_locale, -1);
   gkrellm_draw_panel_layers(panel);
 }
 
@@ -241,7 +245,7 @@ button_release_event(GtkWidget *widget, GdkEventButton *ev, void *N) {
 
   if  (ev->button == 3) {
     if (menu == NULL) gkrellm_message_window("GKrellM radio plugin",
-        "Please setup some channels in the configuration",NULL);
+        _("Please setup some channels in the configuration"),NULL);
     else gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
         ev->state, ev->time);
   }
@@ -263,6 +267,7 @@ create_plugin(GtkWidget *vbox, gint first_create) {
   GdkBitmap       *mask;
   gint            y;
   gint            x;
+  gchar *text_utf8 = NULL, *text_locale = NULL;
 
   if (first_create) {
     panel = gkrellm_panel_new0();
@@ -285,7 +290,7 @@ create_plugin(GtkWidget *vbox, gint first_create) {
   panel->textstyle = ts;      /* would be used for a panel label */
 
   y = 2;			/* some border */
-  station_text = gkrellm_create_decal_text(panel, "Hello World", ts_alt, style, 2, y, 40);
+  station_text = gkrellm_create_decal_text(panel, _("Hello World"), ts_alt, style, 2, y, 40);
 
   /* Create a pixmap decal and place it to the right of station_text.  Use
      |  decals from the builtin decal_misc.xpm.
@@ -310,7 +315,8 @@ create_plugin(GtkWidget *vbox, gint first_create) {
      |  decal.  Just pass the frame we want to be the out image and the
      |  frame for the in or pressed image.
   */
-  gkrellm_draw_decal_text(panel, station_text, station_name(current_freq()),
+  gkrellm_locale_dup_string(&text_utf8, station_name(current_freq()), &text_locale);
+  gkrellm_draw_decal_text(panel, station_text, text_locale,
 			  button_state);
 
   margin = gkrellm_get_style_margins(style);
@@ -398,13 +404,13 @@ void create_station_editor(gint new_entry) {
   
   table = gtk_table_new(2, 2, 0);
   
-  label = gtk_label_new("Station Name:");
+  label = gtk_label_new(_("Station Name:"));
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_EXPAND, GTK_FILL, 4, 4);
   
   gui_station_name_input = gtk_entry_new();
   gtk_table_attach(GTK_TABLE(table), gui_station_name_input, 1, 2, 0, 1, GTK_EXPAND, GTK_FILL, 4, 4);
 
-  label = gtk_label_new("Frequency:");
+  label = gtk_label_new(_("Frequency:"));
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_EXPAND, GTK_FILL, 4, 4);
   
   adj = gtk_adjustment_new(current_freq(), 0.05, 999.99, 0.05, 1, 1);
@@ -421,7 +427,7 @@ void create_station_editor(gint new_entry) {
   gtk_container_add(action_area, button);
 
   /* Cancel button */
-  button = gtk_button_new_with_label("Cancel");
+  button = gtk_button_new_with_label(_("Cancel"));
   gtk_signal_connect_object (GTK_OBJECT(button), "clicked",
 			     GTK_SIGNAL_FUNC(close_station_editor), NULL);
 
@@ -492,7 +498,7 @@ static void create_config(GtkWidget *tab) {
   GtkWidget *text, *label, *panel, *button, *hbox, *scrolled, *frame, *vbox;
   GtkObject *adj;
   gchar *plugin_about_text;
-  gchar *station_tab_titles[3] = { "Station", "Frequency", "" };
+  gchar *station_tab_titles[3] = { _("Station"), _("Frequency"), "" };
   char *f[3];
   int i;
 
@@ -537,28 +543,28 @@ static void create_config(GtkWidget *tab) {
 
   hbox = gtk_hbox_new(0, 0);
 
-  button = gtk_button_new_with_label("New");
+  button = gtk_button_new_with_label(_("New"));
   gtk_signal_connect(GTK_OBJECT(button), "clicked", (GtkSignalFunc)gui_new_station, NULL);
 
   gtk_box_pack_start(GTK_BOX(hbox), button, 0, 0, 2);
-  button = gtk_button_new_with_label("Edit"); 
+  button = gtk_button_new_with_label(_("Edit")); 
   gtk_signal_connect(GTK_OBJECT(button), "clicked", (GtkSignalFunc)gui_edit_station, NULL);
 
   gtk_box_pack_start(GTK_BOX(hbox), button, 0, 0, 2);
-  button = gtk_button_new_with_label("Delete"); 
+  button = gtk_button_new_with_label(_("Delete")); 
   gtk_signal_connect(GTK_OBJECT(button), "clicked", (GtkSignalFunc)gui_delete_station, NULL);
 
   gtk_box_pack_start(GTK_BOX(hbox), button, 0, 0, 2);
-  button = gtk_button_new_with_label("Up");
+  button = gtk_button_new_with_label(_("Up"));
   gtk_signal_connect(GTK_OBJECT(button), "clicked", (GtkSignalFunc)gui_moveup_station, NULL);
 
   gtk_box_pack_start(GTK_BOX(hbox), button, 0, 0, 2);
 
-  button = gtk_button_new_with_label("Down");
+  button = gtk_button_new_with_label(_("Down"));
   gtk_signal_connect(GTK_OBJECT(button), "clicked", (GtkSignalFunc)gui_movedown_station, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), button, 0, 0, 2);
   
-  label = gtk_label_new("Stations");
+  label = gtk_label_new(_("Stations"));
 
   gtk_box_pack_start(GTK_BOX(panel), hbox, FALSE, FALSE, 4);
 
@@ -575,7 +581,7 @@ static void create_config(GtkWidget *tab) {
     hbox = gtk_hbox_new(0, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, 0, 0, 2);
     
-    label = gtk_label_new("Time to mute on channel jump (seconds):");
+    label = gtk_label_new(_("Time to mute on channel jump (seconds):"));
     gtk_box_pack_start(GTK_BOX(hbox), label, 0, 0, 2);
     
     adj = gtk_adjustment_new(mutetime, 0.0, 9.99, 0.01, 0.1, 1);
@@ -587,42 +593,42 @@ static void create_config(GtkWidget *tab) {
 
   /* reopenoption */ {
 
-    gui_reopen_toggle = gtk_check_button_new_with_label("Attempt to reopen radio on startup");
+    gui_reopen_toggle = gtk_check_button_new_with_label(_("Attempt to reopen radio on startup"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gui_reopen_toggle), attempt_reopen);
     gtk_box_pack_start(GTK_BOX(vbox), gui_reopen_toggle, 0, 0, 2);
   /* close radio on exit toggle */
     gui_close_toggle = 
-      gtk_check_button_new_with_label("Turn radio off when exiting gkrellm");
+      gtk_check_button_new_with_label(_("Turn radio off when exiting gkrellm"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gui_close_toggle), 
         close_atexit);
     gtk_box_pack_start(GTK_BOX(vbox), gui_close_toggle, 0, 0, 2);
 
   }
   
-  label = gtk_label_new("Options");
+  label = gtk_label_new(_("Options"));
   gtk_notebook_append_page(GTK_NOTEBOOK(tabs), vbox, label);
 
   /* INFO TAB */
   
   frame = gtk_frame_new(NULL);
-  scrolled = gkrellm_gtk_notebook_page(tabs,"Info");
+  scrolled = gkrellm_gtk_notebook_page(tabs,_("Info"));
   text = gkrellm_gtk_scrolled_text_view(scrolled,NULL,
                                    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-  gkrellm_gtk_text_view_append_strings(text,info_text,
-      sizeof(info_text)/sizeof(gchar *));
+  for (i=0; i < sizeof(info_text)/sizeof(gchar *); ++i)
+     gkrellm_gtk_text_view_append(text, _(info_text[i]));
   /* ABOUT TAB */
 
   plugin_about_text = g_strdup_printf(
-   "Radio Plugin " VERSION "\n" \
+   _("Radio Plugin %s\n" \
    "GKrellM radio Plugin\n\n" \
    "Copyright (C) 2001-2002 Sjoerd Simons\n" \
    "sjoerd@luon.net\n" \
    "http://gkrellm.luon.net/gkrellm-radio.phtml\n\n" \
-   "Released under the GNU General Public Licence");
+   "Released under the GNU General Public Licence"), VERSION);
 
   text = gtk_label_new(plugin_about_text); 
-  label = gtk_label_new("About");
+  label = gtk_label_new(_("About"));
   gtk_notebook_append_page(GTK_NOTEBOOK(tabs),text,label);
   g_free(plugin_about_text);
 }
@@ -747,6 +753,11 @@ static GkrellmMonitor  plugin_mon  =
 */
 GkrellmMonitor *
 gkrellm_init_plugin() {
+
+#ifdef ENABLE_NLS
+   bind_textdomain_codeset(PACKAGE, "UTF-8");
+#endif /* ENABLE_NLS */
+
   style_id = gkrellm_add_meter_style(&plugin_mon, STYLE_NAME);
   plugin_monitor = &plugin_mon;
 #ifdef HAVE_LIRC

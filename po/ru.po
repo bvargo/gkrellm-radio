@@ -1,0 +1,185 @@
+# Russian Translation of GKrellM Radio plugin.
+# Grigory Batalov <bga@altlinux.ru>, 2002.
+msgid ""
+msgstr ""
+"Project-Id-Version: gkrellm-radio 2.0.1\n"
+"POT-Creation-Date: 2002-12-10 17:00+0300\n"
+"PO-Revision-Date: 2002-12-10 20:13+0300\n"
+"Last-Translator: Grigory Batalov <bga@altlinux.ru>\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=KOI8-R\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: gkrellm_radio.c:25
+msgid ""
+"<b>GKrellM Radio Plugin\n"
+"\n"
+msgstr ""
+
+#: gkrellm_radio.c:26
+msgid ""
+"This plugin allow you to control the radio card of your Linux box,if you "
+"have one installed.\n"
+msgstr ""
+"Этот плагин позволяет вам управлять установленной картой-радиоприёмником.\n"
+
+#: gkrellm_radio.c:28
+msgid ""
+"<b>\n"
+"User Interface:\n"
+msgstr ""
+"<b>\n"
+"Пользовательский интерфейс:\n"
+
+#: gkrellm_radio.c:29
+msgid ""
+"\n"
+"\t* Clicking the right button will turn the radio on and off.\n"
+msgstr ""
+"\n"
+"\t* Нажатие на кнопку справа включает или выключает радио.\n"
+
+#: gkrellm_radio.c:30
+msgid ""
+"\t* Clicking the left text will tune to the next channel configured under "
+"configuration.\n"
+msgstr ""
+"\t* Щелчком по тексту слева можно переключаться на следующую из\n"
+"\t   настроенных станций.\n"
+
+#: gkrellm_radio.c:32
+msgid "\t* Using your mousewheel will tune up or down.\n"
+msgstr "\t* Колесо мыши подстраивает частоту вперёд/назад.\n"
+
+#: gkrellm_radio.c:33
+msgid "\t*Right mouse button will pop up a channel menu\n"
+msgstr "\t* Правая кнопка мыши вызывает меню каналов\n"
+
+#: gkrellm_radio.c:34
+msgid ""
+"<b>\n"
+"Thanks to:\n"
+msgstr ""
+"<b>\n"
+"Благодарности:\n"
+
+#: gkrellm_radio.c:35
+msgid ""
+"\n"
+"\tLars Christensen - Upstream author untill version 0.2.1\n"
+"\tGerd Knorr - borrowed some of the radio interface code from his Xawtv "
+"radio application.\n"
+msgstr ""
+"\n"
+"\tLars Christensen - Основной разработчик до версии 0.2.1\n"
+"\tGerd Knorr - автор Xawtv, код которого был частично позаимствован\n"
+"\tдля доступа к интерфейсу радио.\n"
+
+#: gkrellm_radio.c:38
+msgid ""
+"<b>\n"
+"Homepage:\n"
+msgstr ""
+"<b>\n"
+"Домашняя страница:\n"
+
+#: gkrellm_radio.c:203
+msgid "Couldn't open /dev/radio"
+msgstr "Не могу открыть /dev/radio"
+
+#: gkrellm_radio.c:251
+msgid "Please setup some channels in the configuration"
+msgstr "Сконфигурируйте больше каналов в настройках"
+
+#: gkrellm_radio.c:296
+msgid "Hello World"
+msgstr "Здравствуй, мир"
+
+#: gkrellm_radio.c:410
+msgid "Station Name:"
+msgstr "Название станции:"
+
+#: gkrellm_radio.c:416
+msgid "Frequency:"
+msgstr "Частота:"
+
+#: gkrellm_radio.c:433
+msgid "Cancel"
+msgstr "Отмена"
+
+#: gkrellm_radio.c:504
+msgid "Station"
+msgstr "Станция"
+
+#: gkrellm_radio.c:504
+msgid "Frequency"
+msgstr "Частота"
+
+#: gkrellm_radio.c:549
+msgid "New"
+msgstr "Добавить"
+
+#: gkrellm_radio.c:553
+msgid "Edit"
+msgstr "Изменить"
+
+#: gkrellm_radio.c:557
+msgid "Delete"
+msgstr "Удалить"
+
+#: gkrellm_radio.c:561
+msgid "Up"
+msgstr "Вверх"
+
+#: gkrellm_radio.c:566
+msgid "Down"
+msgstr "Вниз"
+
+#: gkrellm_radio.c:570
+msgid "Stations"
+msgstr "Станции"
+
+#: gkrellm_radio.c:587
+msgid "Time to mute on channel jump (seconds):"
+msgstr "Пауза при переключении канала (секунд):"
+
+#: gkrellm_radio.c:599
+msgid "Attempt to reopen radio on startup"
+msgstr "Включать радио при запуске"
+
+#: gkrellm_radio.c:604
+msgid "Turn radio off when exiting gkrellm"
+msgstr "Выключать радио при выходе из gkrellm"
+
+#: gkrellm_radio.c:611
+msgid "Options"
+msgstr "Опции"
+
+#: gkrellm_radio.c:617
+msgid "Info"
+msgstr "Инфо"
+
+#: gkrellm_radio.c:626
+msgid ""
+"Radio Plugin %s\n"
+"GKrellM radio Plugin\n"
+"\n"
+"Copyright (C) 2001-2002 Sjoerd Simons\n"
+"sjoerd@luon.net\n"
+"http://gkrellm.luon.net/gkrellm-radio.phtml\n"
+"\n"
+"Released under the GNU General Public Licence"
+msgstr ""
+"Radio Plugin %s\n"
+"GKrellM radio Plugin\n"
+"\n"
+"Copyright (C) 2001-2002 Sjoerd Simons\n"
+"sjoerd@luon.net\n"
+"http://gkrellm.luon.net/gkrellm-radio.phtml\n"
+"\n"
+"Распространяется под GNU General Public Licence"
+
+#: gkrellm_radio.c:634
+msgid "About"
+msgstr "О программе"
