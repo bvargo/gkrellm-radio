@@ -1,0 +1,17 @@
+Version 0.3:
+  * Took over Upstream Development (sjoerd@luon.net)
+  * Lots of thanks to Lars Christensen, the first upstream maintainer
+  * Turn off the radio when the plugin is disables or gkrellm exit's
+  * Right mouse button pops up a channel menu
+  * Other small bugfixes and enhancments
+
+2001/01/29 - Version 0.2
+	- Mutes a short while when changing channel to avoid
+	  noise. Timer is configurable.
+	- Cleaner configuration interface
+	- Reopen on startup option (to reopen a radio device
+	  previously left on)
+
+2001/01/29 - Version 0.1
+
+	- Initial Release

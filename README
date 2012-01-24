@@ -1,0 +1,74 @@
+
+GKrellM Radio Plugin - to tune your radio card on Linux.
+Copyright (C) 2000 Lars Christensen
+Copyright (C) 2001-2001 Sjoerd Simons
+
+This plugin allows your to turn your radio card on/off and tune to
+channels.
+
+LICENSE INFORMATION
+
+    This program is free software which I release under the GNU
+    General Public License. You may redistribute and/or modify
+    this program under the terms of that license as published by
+    the Free Software Foundation; either version 2 of the License,
+    or (at your option) any later version.
+
+    This program is distributed in the hope that it will be
+    useful, but WITHOUT ANY WARRANTY; without even the implied
+    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+    PURPOSE.  See the GNU General Public License for more details.
+
+    To get a copy of the GNU General Puplic License, write to the
+    Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
+    02139, USA.
+
+
+INSTALLATION
+
+    1. Building
+
+    Build the radio plugin by typing
+
+        make
+
+    If you have gkrellm installed in a nonstandard location, you need
+    to change the GKRELLMDIR variable in the Makefile.
+
+    2. Installing
+
+    Copy the file radio.so to your GKrellM plugin directory. This
+    could be /usr/share/gkrellm/plugins. If you don't have write
+    access, you can put the file in ~/.gkrellm/plugins/ instead.
+
+
+USAGE
+
+    The radio plugin consists of a text field to the left and a
+    button to the right.
+
+    The button on the right will turn the radio on or off.
+
+    Clicking the text field will tune to the next channel. You can
+    configure channels in the GKrellM configuration dialogs, under
+    "Plugins/Radio Plugin".
+
+    Clicking the right mouse bottun somewhere on the plugin, will open 
+    a menu with preset channels.
+
+    If you have a wheel on your mouse, your can use it to tune to
+    any frequence. Simply place it over the plugin and scroll!
+
+CREDITS
+   Lars Christensen: upstream author untill version 0.2.1
+   Sjoerd Simons: Version 0.3 and higher
+
+
+THANKS TO
+
+    Sjoed Simons - I borrowed some of the code from his `volume'
+    plugin.
+
+    Gerd Knorr - I borrowed some of the radio interface code from
+    his Xawtv radio application.
+       
