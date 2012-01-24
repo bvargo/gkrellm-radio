@@ -1,3 +1,6 @@
+Version 0.3.3:
+  * The tuner was a factor 10 wrong for VIDEO_TUNER_LOW cards
+
 Version 0.3.2:
   * Made turning off the radio on gkrellm exit an option (default on)
 

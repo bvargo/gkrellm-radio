@@ -29,7 +29,7 @@ static void  radio_get_tunerinfo() {
     struct video_tuner tuner;
     tuner.tuner = 0;
     if (ioctl (radio_fd, VIDIOCGTUNER, &tuner) < 0) return;
-    fact = (tuner.flags & VIDEO_TUNER_LOW) == 0 ? 16 : 1600;
+    fact = (tuner.flags & VIDEO_TUNER_LOW) == 0 ? 16 : 16000;
     rangelow =  ((float) tuner.rangelow)/fact;
     rangehigh = ((float) tuner.rangehigh)/fact;
 };
