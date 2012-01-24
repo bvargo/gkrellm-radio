@@ -12,13 +12,20 @@ DISTFILES=gkrellm_radio.c radio.c radio.h videodev.h README Makefile CHANGES
 CC=gcc
 LDFLAGS=
 OBJS=gkrellm_radio.o radio.o
-CFLAGS=-fPIC -I$(GKRELLMDIR)/include `gtk-config --cflags` `imlib-config --cflags-gdk` -Wall -DVERSION=\"$(VERSION)\"
+CFLAGS := ${CFLAGS} -fPIC -I$(GKRELLMDIR)/include `gtk-config --cflags` `imlib-config --cflags-gdk` -Wall -DVERSION=\"$(VERSION)\"
+
+ifdef WITH_LIRC
+CFLAGS := ${CFLAGS} -DHAVE_LIRC
+LDFLAGS:= ${LDFLAGS} -llirc_client
+OBJS := ${OBJS} gkrellm_radio_lirc.o
+DISTFILES := ${DISTFILES} gkrellm_radio_lirc.c
+endif
 
 radio.so: $(OBJS)
-	$(CC) -shared -Wl -o radio.so $(OBJS)
+	$(CC) -shared -Wl -o radio.so $(OBJS) $(LDFLAGS) 
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -c $*.c
+	$(CC) $(CFLAGS) -c $*.c
 
 install: radio.so
 	mkdir -p $$HOME/.gkrellm/plugins

@@ -1,0 +1,34 @@
+# To use LIRC (Linux Infrared Remote Control http://www.lirc.org/)
+# with the gkrellm-radio plugin you may put the following into your
+# ~/.lircrc file.
+
+begin
+	prog   = gkrellm_radio
+	button = RADIO
+	config = power
+end
+begin
+	prog   = gkrellm_radio
+	button = CH+
+	config = next_station
+end
+begin	
+	prog   = gkrellm_radio
+	button = CH-
+	config = prev_station
+end
+begin	
+	prog   = gkrellm_radio
+	button = Up
+	config = finetune_up
+end
+begin	
+	prog   = gkrellm_radio
+	button = Down 
+	config = finetune_down
+end
+begin
+	prog   = gkrellm_radio
+	button = MUTE
+	config = mute
+end

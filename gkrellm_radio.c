@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
-#include <gkrellm/gkrellm.h>
-#include <gtk/gtk.h>
 
 #include "radio.h"
+#include "gkrellm_radio.h"
+
+#ifdef HAVE_LIRC
+#include "gkrellm_radio_lirc.h"
+#endif
 
 #define CONFIG_NAME "Radio Plugin" /* Name in the configuration window */
 #define CONFIG_KEY  "radio"     /* Name in the configuration window */
@@ -41,13 +44,13 @@ static Monitor  *plugin_monitor;
 
 static Decal *station_text, *decal_onoff_pix;
 
-static DecalButton *onoff_button;
+DecalButton *onoff_button;
 
 static gint     style_id;
 
 static gint     button_state;	/* For station_text button */
 
-static gint onoff_state;	/* for onoff button */
+gint onoff_state;	/* for onoff button */
 static gfloat mutetime = 0.15;
 static gboolean attempt_reopen = TRUE; 
 
@@ -59,8 +62,10 @@ typedef struct station {
 GtkWidget *menu = NULL;
 
 static station *stations = NULL;
-static gint nstations = 0;
-static gint currentstation = -1;
+gint nstations = 0;
+gint currentstation = -1;
+
+static void set_text_freq(float freq);
 
 void free_stations() {
   int i;
@@ -164,8 +169,8 @@ void set_onoff_button(int on) {
 }
 
 void reopen_radio() {
-  if (!attempt_reopen)
-    return;
+  if (!attempt_reopen) return;
+
   if (open_radio() != -1) {
     if (radio_ismute()) {
       close_radio();
@@ -178,30 +183,30 @@ void reopen_radio() {
   set_onoff_button(onoff_state);
 }
 
-static void
-cb_button(DecalButton *button)
-{
-  if (GPOINTER_TO_INT(button->data) == 1)
-    {
-      switch_station();
-    }
-  if (GPOINTER_TO_INT(button->data) == 2) {
+void gkrellm_radio_turn_onoff(void) {
     onoff_state = !onoff_state;
     if (onoff_state) {
       if (open_radio() == -1) {
-	gkrellm_message_window("GKrellM error",
-			       "GKrellM radio plugin couldn't open /dev/radio", NULL);
+        	gkrellm_message_window("GKrellM error",
+			      "GKrellM radio plugin couldn't open /dev/radio", NULL);
       } else {
-	/* radio was opened */
-	start_mute_timer();
-	radio_tune(current_freq());
-	set_onoff_button(onoff_state);
+	    /* radio was opened */
+      	start_mute_timer();
+      	radio_tune(current_freq());
+        set_text_freq(current_freq());
+       	set_onoff_button(onoff_state);
       }
     } else {
       set_onoff_button(onoff_state);
       close_radio();
     }
-  }
+}
+
+void
+cb_button(DecalButton *button)
+{
+  if (GPOINTER_TO_INT(button->data) == 1) { switch_station(); }
+  if (GPOINTER_TO_INT(button->data) == 2) { gkrellm_radio_turn_onoff(); }
 }
 
 static void set_text_freq(float freq) {
@@ -219,24 +224,26 @@ panel_expose_event(GtkWidget *widget, GdkEventExpose *ev)
   return FALSE;
 }
 
+void gkrellm_radio_finetune_delta (float amount) {
+  radio_freq_delta(amount);
+  set_text_freq(current_freq());
+  gkrellm_config_modified();
+}
+
 static gint 
-button_release_event(GtkWidget *widget, GdkEventButton *ev, void *N)
-{
-  switch (ev->state) {
-    case GDK_BUTTON3_MASK:
+button_release_event(GtkWidget *widget, GdkEventButton *ev, void *N) {
+
+  switch (ev->button) {
+    case 3:
       gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
           ev->state, ev->time);
       break;
-    case GDK_BUTTON4_MASK:
-      radio_freq_delta(+0.05);
-      set_text_freq(current_freq());
-      gkrellm_config_modified();
+    case 4:
+      gkrellm_radio_finetune_delta(+0.05);
       break;
-    case GDK_BUTTON5_MASK:
-     radio_freq_delta(-0.05);
-     set_text_freq(current_freq());
-     gkrellm_config_modified();
-     break; 
+    case 5:
+      gkrellm_radio_finetune_delta(-0.05);
+      break; 
   }
   return TRUE;
 }
@@ -263,6 +270,7 @@ create_plugin(GtkWidget *vbox, gint first_create) {
     create_freq_menu();
   } else
     gkrellm_destroy_decal_list(panel);
+
   style = gkrellm_meter_style(style_id);
 
   /* Each Style has two text styles.  The theme designer has picked the
@@ -323,7 +331,6 @@ create_plugin(GtkWidget *vbox, gint first_create) {
   if (first_create) {
     gtk_signal_connect(GTK_OBJECT (panel->drawing_area), "expose_event",
 		       (GtkSignalFunc) panel_expose_event, NULL);
-
     gtk_signal_connect(GTK_OBJECT (panel->drawing_area), "button_release_event",
 		       GTK_SIGNAL_FUNC(button_release_event), NULL);
   }
@@ -736,6 +743,10 @@ init_plugin()
 {
   style_id = gkrellm_add_meter_style(&plugin_mon, STYLE_NAME);
   plugin_monitor = &plugin_mon;
+#ifdef HAVE_LIRC
+  gkrellm_radio_lirc_init();
+  g_atexit(gkrellm_radio_lirc_exit);
+#endif
   g_atexit(close_radio);
   return &plugin_mon;
 }

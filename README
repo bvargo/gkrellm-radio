@@ -35,6 +35,12 @@ INSTALLATION
     If you have gkrellm installed in a nonstandard location, you need
     to change the GKRELLMDIR variable in the Makefile.
 
+    If you want to use LIRC (http://www.lirc.org/) with the radio 
+    plugin, you just need to define the WITH_LIRC variable to a 
+    non-empty value. For example in bash you could do:
+    
+    	WITH_LIRC=1 make
+
     2. Installing
 
     Copy the file radio.so to your GKrellM plugin directory. This

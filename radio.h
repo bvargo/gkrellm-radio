@@ -10,4 +10,4 @@ void radio_mute();
 void radio_unmute();
 int radio_ismute();
 
-#endif __radio_h__
+#endif /* __radio_h__ */
