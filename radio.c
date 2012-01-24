@@ -44,7 +44,7 @@ radio_setfreq(int fd, float nfreq)
     if (nfreq > rangehigh) nfreq = rangehigh;
 
     /* provide good rounding */
-    ifreq = (nfreq * fact + 0.5);
+    ifreq = (nfreq + 1.0/32) * fact;
 
     ioctl(fd, VIDIOCSFREQ, &ifreq);
     return nfreq;
@@ -93,7 +93,6 @@ int open_radio() {
   if (radio_fd != -1) return 0;
   if (-1 == (radio_fd = open(DEVICE, O_RDONLY))) return -1;
   radio_get_tunerinfo();
-  radio_setfreq(radio_fd, freq);
   return 0;
 }
 

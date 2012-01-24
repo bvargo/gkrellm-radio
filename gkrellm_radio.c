@@ -53,6 +53,7 @@ static gint     button_state;	/* For station_text button */
 gint onoff_state;	/* for onoff button */
 static gfloat mutetime = 0.15;
 static gboolean attempt_reopen = TRUE; 
+static gboolean close_atexit = TRUE;
 
 typedef struct station {
   char *station_name;
@@ -118,6 +119,10 @@ do_switch_station(int nr) {
   gkrellm_draw_decal_text(panel, station_text, 
       stations[nr].station_name, -1);
   gkrellm_draw_layers_force(panel);
+}
+
+static void exit_func(void) {
+  if (close_atexit) close_radio();
 }
 
 gint
@@ -343,6 +348,7 @@ static GtkWidget *gui_station_dialog = NULL;
 static GtkWidget *gui_station_name_input, *gui_freq_input;
 static GtkWidget *gui_mutetime_entry = NULL;
 static GtkWidget *gui_reopen_toggle = NULL;
+static GtkWidget *gui_close_toggle = NULL;
 
 static gint gui_station_selected = -1;
 static gint gui_station_count = 0;
@@ -586,6 +592,12 @@ static void create_config(GtkWidget *tab) {
     gui_reopen_toggle = gtk_check_button_new_with_label("Attempt to reopen radio on startup");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gui_reopen_toggle), attempt_reopen);
     gtk_box_pack_start(GTK_BOX(vbox), gui_reopen_toggle, 0, 0, 2);
+  /* close radio on exit toggle */
+    gui_close_toggle = 
+      gtk_check_button_new_with_label("Turn radio off when exiting gkrellm");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gui_close_toggle), 
+        close_atexit);
+    gtk_box_pack_start(GTK_BOX(vbox), gui_close_toggle, 0, 0, 2);
 
   }
   
@@ -648,6 +660,8 @@ static void apply_config(void) {
   attempt_reopen =
     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gui_reopen_toggle));
 
+  close_atexit =
+    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gui_close_toggle));
   /* recreate the frequency menu */
   create_freq_menu();
 }
@@ -662,6 +676,7 @@ void save_config(FILE *f) {
   }
   fprintf(f, "%s mutetime %.2f\n", CONFIG_KEY, mutetime);
   fprintf(f, "%s attemptreopen %d\n", CONFIG_KEY, attempt_reopen ? 1 : 0);
+  fprintf(f, "%s close_atexit %d\n", CONFIG_KEY, close_atexit ? 1 : 0);
 }
 
 void load_config(gchar *s) {
@@ -704,6 +719,8 @@ void load_config(gchar *s) {
   }
   else if (strcmp(key, "attemptreopen") == 0) {
     attempt_reopen = atoi(value);
+  } else if (strcmp(key, "close_atexit") == 0) {
+    close_atexit = atoi(value);
   }
 
 }
@@ -747,6 +764,6 @@ init_plugin()
   gkrellm_radio_lirc_init();
   g_atexit(gkrellm_radio_lirc_exit);
 #endif
-  g_atexit(close_radio);
+  g_atexit(exit_func);
   return &plugin_mon;
 }

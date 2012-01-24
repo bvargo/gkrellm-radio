@@ -1,3 +1,6 @@
+Version 0.3.2:
+  * Made turning off the radio on gkrellm exit an option (default on)
+
 Version 0.3.1:
   * Fixed right mouse button/scrollwheel does nothing bug
   * Respect the frequency range of the tuner
