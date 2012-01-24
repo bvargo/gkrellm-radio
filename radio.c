@@ -60,6 +60,8 @@ void radio_setfreq(float nfreq)
 {
    struct v4l2_frequency freq;
 
+   last_freq = nfreq;
+
    if (radio_fd == -1)
       return;
 
@@ -81,30 +83,11 @@ void radio_setfreq(float nfreq)
       perror("VIDIOC_S_FREQUENCY, set frequency");
       return;
    }
-
-   last_freq = nfreq;
 }
 
 // get the radio's current frequency
 float radio_getfreq()
 {
-   struct v4l2_frequency freq;
-
-   if (radio_fd == -1)
-      return freq_min;
-
-   // get the frequency
-   memset(&freq, 0, sizeof(freq));
-   // use the first tuner
-   freq.tuner = 0;
-   if (ioctl(radio_fd, VIDIOC_G_FREQUENCY, &freq) < 0)
-   {
-      perror("VIDIOC_G_FREQUENCY, get frequency");
-      return freq_min;
-   }
-
-   last_freq = (float)freq.frequency / freq_frac;
-
    return last_freq;
 }
 

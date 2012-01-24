@@ -119,6 +119,7 @@ do_switch_station(int nr) {
   gkrellm_draw_decal_text(panel, station_text, 
       text_locale, -1);
   gkrellm_draw_panel_layers(panel);
+  gkrellm_config_modified();
 }
 
 static void exit_func(void) {
