@@ -182,31 +182,28 @@ void reopen_radio() {
   if (!attempt_reopen) return;
 
   if (open_radio() != -1) {
-    if (radio_ismute()) {
-      close_radio();
-      onoff_state = 0;		/* off */
-    } else {
       start_mute_timer();
+      set_text_freq(current_freq());
       onoff_state = 1;		/* on */
-    }
   }
   set_onoff_button(onoff_state);
 }
 
 void gkrellm_radio_turn_onoff(void) {
-    onoff_state = !onoff_state;
-    if (onoff_state) {
+    if (!onoff_state) {  
       if (open_radio() == -1) {
         	gkrellm_message_window("GKrellM radio plugin",
 			      "Couldn't open /dev/radio", NULL);
       } else {
 	    /* radio was opened */
+        onoff_state = 1; /* on */
       	start_mute_timer();
       	radio_tune(current_freq());
         set_text_freq(current_freq());
        	set_onoff_button(onoff_state);
       }
     } else {
+      onoff_state = 0; /* off */
       set_onoff_button(onoff_state);
       close_radio();
     }

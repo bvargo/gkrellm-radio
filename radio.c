@@ -93,6 +93,9 @@ int open_radio() {
   if (radio_fd != -1) return 0;
   if (-1 == (radio_fd = open(DEVICE, O_RDONLY))) return -1;
   radio_get_tunerinfo();
+  if (radio_ismute()) {
+    radio_unmute();
+  }
   return 0;
 }
 
